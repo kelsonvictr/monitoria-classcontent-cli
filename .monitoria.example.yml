@@ -1,0 +1,28 @@
+# MonitorIA — File filters example
+# Place this file in the root of the student's project to customize monitoring
+
+# File extensions to track
+extensions:
+  - .java
+  - .xml
+  - .properties
+  - .yml
+  - .yaml
+  - .sql
+
+# Directories to ignore
+ignore:
+  - node_modules
+  - .git
+  - target
+  - build
+  - .idea
+  - .vscode
+  - .gradle
+  - __pycache__
+
+# Seconds between syncs (default: 30)
+debounce_seconds: 30
+
+# Max file size in KB to track (larger files are skipped)
+max_file_size_kb: 500
