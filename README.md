@@ -49,33 +49,40 @@ Enquanto você codifica no seu editor preferido (IntelliJ, VS Code, Cursor, etc.
 
 ## 📥 Instalação (só na primeira vez)
 
-Abra o terminal, escolha uma pasta onde quiser guardar o MonitorIA (ex: sua pasta de documentos) e rode:
+Abra um terminal (pode ser o terminal integrado do IntelliJ, `Alt + F12`) e rode **uma única linha**:
 
 ```bash
-# 1. Baixa o MonitorIA
-git clone https://github.com/kelsonvictr/monitoria-classcontent-cli.git
-cd monitoria-classcontent-cli
-
-# 2. Cria um ambiente virtual isolado (boa prática do Python)
-python3 -m venv .venv
-
-# 3. Ativa o ambiente virtual
-source .venv/bin/activate          # macOS / Linux
-# .venv\Scripts\activate           # Windows (PowerShell)
-
-# 4. Instala o MonitorIA
-pip install -e .
+curl -sSL https://raw.githubusercontent.com/kelsonvictr/monitoria-classcontent-cli/main/install.sh | bash
 ```
 
-Se tudo deu certo, rode:
+O instalador faz tudo automaticamente: baixa o MonitorIA, cria um ambiente virtual isolado, instala as dependências e deixa o comando `monitoria` disponível globalmente.
+
+Depois de terminar, **feche e reabra o terminal** (pra carregar o PATH atualizado) e rode:
 
 ```bash
 monitoria --help
 ```
 
-e você verá a lista de comandos disponíveis.
+Se aparecer a lista de comandos, tá pronto — **você não precisa ativar venv nenhum** nas próximas vezes. O comando `monitoria` funciona direto em qualquer terminal.
 
-> 💡 **Importante:** sempre que abrir um terminal novo para usar o MonitorIA, você precisa **reativar o ambiente virtual** com `source .venv/bin/activate` (ou `.venv\Scripts\activate` no Windows) antes de rodar `monitoria`.
+> 💡 **No Windows?** Use o **Git Bash** (vem junto com a instalação do Git). O comando acima funciona igual. PowerShell/CMD não são suportados por enquanto.
+
+### Instalação manual (caso prefira ver tudo que é feito)
+
+Se preferir passo a passo em vez de rodar o instalador automático:
+
+```bash
+git clone https://github.com/kelsonvictr/monitoria-classcontent-cli.git ~/.monitoria/app
+python3 -m venv ~/.monitoria/app/.venv
+~/.monitoria/app/.venv/bin/pip install -e ~/.monitoria/app
+# Cria um atalho global
+mkdir -p ~/.local/bin
+ln -sf ~/.monitoria/app/.venv/bin/monitoria ~/.local/bin/monitoria
+# Garante que ~/.local/bin está no PATH
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc   # ou ~/.bashrc
+```
+
+Reabra o terminal e `monitoria --help` deve funcionar.
 
 ---
 
@@ -139,34 +146,31 @@ O momento que você realmente vai usar o MonitorIA é **durante a aula**, com se
 
 Exemplo: abra sua pasta `tarefas/` no IntelliJ.
 
-### Passo 2 — Abra o terminal integrado
+### Passo 2 — Abra o terminal integrado do IntelliJ
 
-No IntelliJ, pressione **`Alt + F12`** (no macOS: `Option + F12`).
+Pressione **`Alt + F12`** (macOS: `Option + F12`). O terminal abre já na pasta do seu projeto.
 
-### Passo 3 — Ative o ambiente virtual do MonitorIA
-
-```bash
-cd ~/monitoria-classcontent-cli    # ajuste para o caminho onde você clonou
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-```
-
-### Passo 4 — Inicie o `watch` apontando para a pasta do seu projeto
+### Passo 3 — Inicie o watch
 
 ```bash
-monitoria watch ~/IdeaProjects/tarefas
+monitoria watch .
 ```
 
-> Substitua `~/IdeaProjects/tarefas` pelo caminho real da pasta do seu projeto.
+O **ponto final** (`.`) significa "pasta atual" — como o terminal do IntelliJ já abre na raiz do seu projeto, é só rodar assim. Não precisa ativar ambiente virtual nenhum.
 
-A partir desse momento, o painel do MonitorIA aparece **no próprio terminal**, e cada vez que você salvar um arquivo no editor, ele envia o código atualizado para o ClassContent e mostra o feedback na tela.
+A partir desse momento, o painel do MonitorIA aparece no próprio terminal, e cada vez que você salvar um arquivo no editor, ele envia o código atualizado para o ClassContent e mostra o feedback na tela.
 
-### Passo 5 — Codifique normalmente no editor!
+### Passo 4 — Codifique normalmente no editor!
 
 Só isso. Volte para o editor e continue a aula. Pode deixar o terminal com o MonitorIA visível (split embaixo do editor) para acompanhar o feedback.
 
-### Passo 6 — Ao final da aula
+### Passo 5 — Ao final da aula
 
-Para encerrar o MonitorIA, basta apertar **`Ctrl + C`** no terminal. Os dados já foram enviados; pode fechar tudo tranquilo.
+Para encerrar o MonitorIA, aperte **`Ctrl + C`** no terminal. Os dados já foram enviados; pode fechar tudo tranquilo.
+
+### 🎯 Atalho: botão "MonitorIA" no IntelliJ
+
+Se o professor distribuir o projeto já com um arquivo `.idea/runConfigurations/MonitorIA.xml`, aparece uma configuração **🤖 MonitorIA** no topo do IntelliJ. Basta clicar no ▶ (Run) e o terminal integrado abre rodando `monitoria watch .` automaticamente — sem digitar comando. Pergunta ao professor.
 
 ---
 
@@ -316,9 +320,29 @@ A aula acabou (ou foi pausada). Aperte `Ctrl + C` para encerrar o `watch`. Da pr
 
 No Windows, tente `python` em vez de `python3`. Se nenhum funcionar, instale do site oficial: [python.org/downloads](https://www.python.org/downloads/).
 
-### `pip install -e .` deu erro
+### `monitoria: command not found` depois de rodar o instalador
 
-Confira se o ambiente virtual está ativado — no início da linha do terminal deve aparecer `(.venv)`. Se não aparecer, rode `source .venv/bin/activate` (ou `.venv\Scripts\activate` no Windows).
+Feche e reabra o terminal — o instalador atualiza o PATH mas o terminal atual não enxerga a mudança. Se persistir, rode na hora:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+E confira que o atalho existe:
+
+```bash
+ls -l ~/.local/bin/monitoria
+```
+
+Se o arquivo não existir, rode o instalador de novo:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/kelsonvictr/monitoria-classcontent-cli/main/install.sh | bash
+```
+
+### O instalador deu erro de permissão (`Permission denied`)
+
+Não rode com `sudo`. O instalador coloca tudo na sua pasta pessoal (`~/.monitoria` e `~/.local/bin`), não precisa de admin.
 
 ### O painel está todo bagunçado / aparecendo caracteres estranhos
 
@@ -355,18 +379,12 @@ Se quiser remover o MonitorIA:
 # 2. Remova seu login local
 monitoria logout
 
-# 3. Saia do ambiente virtual
-deactivate
-
-# 4. Apague a pasta inteira
-cd ..
-rm -rf monitoria-classcontent-cli
-
-# 5. (Opcional) Apague a configuração local
+# 3. Remove o atalho global e o diretório de instalação
+rm -f ~/.local/bin/monitoria
 rm -rf ~/.monitoria
 ```
 
-Pronto — nada mais do MonitorIA ficará no seu computador.
+Se quiser, remova também a linha `export PATH="$HOME/.local/bin:$PATH"` que o instalador adicionou em `~/.zshrc` ou `~/.bashrc`. Pronto — nada mais do MonitorIA ficará no seu computador.
 
 ---
 
