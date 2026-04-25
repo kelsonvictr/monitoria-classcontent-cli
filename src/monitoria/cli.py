@@ -90,15 +90,27 @@ def init(api_url: str | None):
 @click.argument("path", type=click.Path(exists=True, file_okay=False))
 @click.option("--debounce", default=10, help="Segundos entre syncs (default: 10)")
 @click.option("--offline", is_flag=True, default=False, help="Modo offline — só rastreia arquivos sem API")
-def watch(path: str, debounce: int, offline: bool):
+@click.option("--skip-validation", is_flag=True, default=False,
+              help="Pula a validação de diretório (use só se souber o que está fazendo)")
+def watch(path: str, debounce: int, offline: bool, skip_validation: bool):
     """Observa uma pasta e envia código para análise da IA em tempo real.
 
     Uso: monitoria watch ./meu-projeto
 
+    Antes de começar, valida se o diretório é seguro pra observar:
+    - bloqueia pastas do sistema (HOME, Desktop, Downloads, ~/Library, etc.)
+    - pergunta para a IA se o conteúdo bate com a aula em andamento
+
     No modo --offline, apenas rastreia arquivos localmente sem enviar para a API.
     O professor precisa ter uma aula ativa para que os syncs sejam aceitos.
     """
+    from pathlib import Path
     from monitoria.config import MonitoriaConfig
+    from monitoria.validate import (
+        WatchDirBlocked,
+        check_blocklist,
+        validate_watch_dir,
+    )
     from monitoria.watcher import start_watching
 
     config = MonitoriaConfig.load()
@@ -111,10 +123,49 @@ def watch(path: str, debounce: int, offline: bool):
         console.print("❌ [red]Turma não configurada. Execute 'monitoria init' primeiro.[/red]")
         raise SystemExit(1)
 
-    config.project_path = path
+    project_path = Path(path).resolve()
+    config.project_path = str(project_path)
     config.save()
 
-    start_watching(path, config, debounce, console, offline=offline)
+    if not skip_validation:
+        try:
+            check_blocklist(project_path)
+        except WatchDirBlocked as exc:
+            console.print(f"\n🔴 [red bold]Diretório bloqueado[/red bold]")
+            console.print(f"   [red]{exc}[/red]\n")
+            raise SystemExit(1)
+
+    if not offline and not skip_validation:
+        with console.status("[cyan]Validando diretório com a IA...[/cyan]"):
+            result = validate_watch_dir(config, project_path)
+
+        if result is None:
+            console.print("   [yellow]⚠ Não foi possível validar agora — seguindo mesmo assim.[/yellow]")
+        elif not result.get("checked"):
+            reason = result.get("reason", "")
+            if reason:
+                console.print(f"   [dim]ℹ {reason}[/dim]")
+        else:
+            decision = result.get("decision", "OK")
+            reason = result.get("reason", "")
+            session_title = result.get("sessionTitle", "")
+            if decision == "OK":
+                ctx_label = f" — {session_title}" if session_title else ""
+                console.print(f"   🟢 [green]Diretório OK[/green]{ctx_label}")
+            elif decision == "SUSPEITO":
+                console.print(f"\n   🟡 [yellow bold]Diretório suspeito[/yellow bold]")
+                console.print(f"   [yellow]{reason}[/yellow]\n")
+                if not click.confirm("   Tem certeza que quer continuar?", default=False):
+                    console.print("   [dim]Cancelado. Aponte para o projeto correto e tente de novo.[/dim]\n")
+                    raise SystemExit(0)
+            elif decision == "RECUSADO":
+                console.print(f"\n   🔴 [red bold]Diretório recusado pela IA[/red bold]")
+                console.print(f"   [red]{reason}[/red]")
+                console.print(f"   [dim]O professor foi avisado. Aponte para o projeto correto da aula.[/dim]")
+                console.print(f"   [dim]Se foi engano da IA, rode com --skip-validation.[/dim]\n")
+                raise SystemExit(1)
+
+    start_watching(str(project_path), config, debounce, console, offline=offline)
 
 
 @main.command()
