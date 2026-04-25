@@ -176,6 +176,12 @@ def start_watching(
     session_title: str | None = None
     session_status: str | None = None
 
+    # Teacher mode state — when user is a teacher of the class, syncs are
+    # published as the live reference code (not analyzed by Haiku).
+    teacher_last_publish_at: float | None = None
+    teacher_files_published: int = 0
+    teacher_blob_bytes: int = 0
+
     # Content hash tracking
     last_content_hash: str = ""
 
@@ -187,6 +193,13 @@ def start_watching(
     def _update_ai_state(result: dict):
         """Update AI analysis state from API response."""
         nonlocal ai_score, ai_summary, ai_issues, ai_positives
+        nonlocal teacher_last_publish_at, teacher_files_published, teacher_blob_bytes
+        if result.get("mode") == "teacher":
+            teacher_last_publish_at = time.time()
+            teacher_files_published = int(result.get("filesPublished") or 0)
+            teacher_blob_bytes = int(result.get("blobBytes") or 0)
+            log(f"🎤 Gabarito publicado: {teacher_files_published} arquivos, {teacher_blob_bytes} bytes")
+            return
         ai_data = result.get("aiAnalysis")
         if ai_data:
             ai_score = ai_data.get("score", 0)
@@ -225,6 +238,9 @@ def start_watching(
             if session:
                 session_title = session.get("title", "")
                 session_status = session.get("status", "")
+                if session.get("isTeacher"):
+                    mode = "teacher"
+                    log(f"🎤 Você é professor desta turma — modo gabarito ao vivo ATIVADO")
                 log(f"Sessão: {session_title} ({session_status})")
             else:
                 log("⚠ Nenhuma aula em andamento — aguardando professor iniciar...")
@@ -275,6 +291,9 @@ def start_watching(
                 session_title=session_title,
                 session_status=session_status,
                 log_lines=log_lines,
+                teacher_last_publish_at=teacher_last_publish_at,
+                teacher_files_published=teacher_files_published,
+                teacher_blob_bytes=teacher_blob_bytes,
             ),
             console=console,
             refresh_per_second=2,
@@ -361,6 +380,9 @@ def start_watching(
                         session_title=session_title,
                         session_status=session_status,
                         log_lines=log_lines,
+                        teacher_last_publish_at=teacher_last_publish_at,
+                        teacher_files_published=teacher_files_published,
+                        teacher_blob_bytes=teacher_blob_bytes,
                     )
                 )
 

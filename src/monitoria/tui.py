@@ -28,7 +28,16 @@ def build_header(
     session_status: str | None = None,
 ) -> Panel:
     """Build the header panel."""
-    mode_label = "[yellow]OFFLINE[/yellow]" if mode == "offline" else "[green]ONLINE[/green]"
+    if mode == "teacher":
+        mode_label = "[bold blue]🎤 PROFESSOR[/bold blue]"
+        border = "bright_blue"
+    elif mode == "offline":
+        mode_label = "[yellow]OFFLINE[/yellow]"
+        border = "bright_magenta"
+    else:
+        mode_label = "[green]ONLINE[/green]"
+        border = "bright_magenta"
+
     text = Text.assemble(
         ("🤖 MonitorIA", "bold magenta"),
         (f" v{version}", "dim"),
@@ -51,7 +60,7 @@ def build_header(
         text.append(f"Aula: {session_title} ", style="white")
         text.append_text(Text.from_markup(status_label))
 
-    return Panel(text, style="bright_magenta", height=3)
+    return Panel(text, style=border, height=3)
 
 
 def build_files_panel(tracked_files: list[dict], dirty_count: int) -> Panel:
@@ -181,6 +190,32 @@ def build_log_panel(log_lines: list[str]) -> Panel:
     return Panel(text, title="📋 Log", border_style="dim", height=8)
 
 
+def build_teacher_panel(
+    last_publish_at: float | None,
+    files_published: int,
+    blob_bytes: int,
+) -> Panel:
+    """Painel central do modo professor — substitui Score/Issues."""
+    text = Text()
+    text.append("\n  🎤 ", style="")
+    text.append("Modo Professor — Gabarito Ao Vivo\n\n", style="bold blue")
+    text.append("  Seu código está sendo publicado como gabarito da aula.\n", style="white")
+    text.append("  Os alunos sao analisados pelo Haiku contra o seu estado atual.\n\n", style="dim")
+
+    if last_publish_at:
+        from datetime import datetime
+        when = datetime.fromtimestamp(last_publish_at).strftime("%H:%M:%S")
+        text.append(f"  ✓ Última publicação: {when}\n", style="green")
+        text.append(f"  📁 {files_published} arquivos publicados\n", style="cyan")
+        size_kb = blob_bytes / 1024.0
+        size_label = f"{size_kb:.1f} KB" if size_kb < 1024 else f"{size_kb/1024:.2f} MB"
+        text.append(f"  📦 Tamanho do gabarito: {size_label}\n", style="dim")
+    else:
+        text.append("  Aguardando primeira publicação...\n", style="dim")
+
+    return Panel(text, title="🎤 Professor", border_style="blue")
+
+
 def build_dashboard(
     version: str,
     class_id: str | None,
@@ -196,6 +231,9 @@ def build_dashboard(
     session_title: str | None,
     session_status: str | None,
     log_lines: list[str],
+    teacher_last_publish_at: float | None = None,
+    teacher_files_published: int = 0,
+    teacher_blob_bytes: int = 0,
 ) -> Layout:
     """Build the complete TUI dashboard layout."""
     layout = Layout()
@@ -211,19 +249,25 @@ def build_dashboard(
         Layout(name="right", ratio=2),
     )
 
-    layout["left"].split_column(
-        Layout(name="files", ratio=2),
-        Layout(name="score", ratio=1),
-    )
+    if mode == "teacher":
+        # Modo professor: ocupa todo o lado esquerdo com files, e direita com painel professor
+        layout["left"].update(build_files_panel(tracked_files, dirty_count))
+        layout["right"].update(build_teacher_panel(
+            teacher_last_publish_at, teacher_files_published, teacher_blob_bytes,
+        ))
+    else:
+        layout["left"].split_column(
+            Layout(name="files", ratio=2),
+            Layout(name="score", ratio=1),
+        )
+        layout["files"].update(build_files_panel(tracked_files, dirty_count))
+        layout["score"].update(build_score_panel(ai_score, ai_summary, ai_positives))
+        layout["right"].update(build_issues_panel(ai_issues))
 
-    # Populate panels
     layout["header"].update(build_header(
         version, class_id, class_name, project_path, mode,
         session_title, session_status,
     ))
-    layout["files"].update(build_files_panel(tracked_files, dirty_count))
-    layout["score"].update(build_score_panel(ai_score, ai_summary, ai_positives))
-    layout["right"].update(build_issues_panel(ai_issues))
     layout["footer"].update(build_log_panel(log_lines))
 
     return layout
