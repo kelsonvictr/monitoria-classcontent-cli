@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "monitoria"
+name = "monitoria-classcontent"
 version = "0.1.0"
 description = "MonitorIA — Coding monitor em tempo real para ClassContent.digital"
 readme = "README.md"
@@ -12,6 +12,21 @@ license = {text = "MIT"}
 authors = [
     {name = "ClassContent.digital"},
 ]
+keywords = ["classcontent", "monitoria", "lms", "education", "code-review", "live-feedback"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Education",
+    "Topic :: Software Development",
+]
 dependencies = [
     "watchdog>=4.0",
     "click>=8.1",
@@ -19,6 +34,11 @@ dependencies = [
     "rich>=13.0",
     "pyyaml>=6.0",
 ]
+
+[project.urls]
+Homepage = "https://classcontent.digital"
+Repository = "https://github.com/kelsonvictr/monitoria-classcontent-cli"
+Issues = "https://github.com/kelsonvictr/monitoria-classcontent-cli/issues"
 
 [project.optional-dependencies]
 dev = [

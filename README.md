@@ -15,7 +15,7 @@ Enquanto você codifica no seu editor preferido (IntelliJ, VS Code, Cursor, etc.
 - [Primeiro uso: fazer login e escolher a turma](#-primeiro-uso-fazer-login-e-escolher-a-turma)
 - [Usando durante a aula](#-usando-durante-a-aula)
 - [Entendendo o painel na sua tela](#-entendendo-o-painel-na-sua-tela)
-- [Dicas para usar no IntelliJ](#-dicas-para-usar-no-intellij)
+- [Dicas para usar no seu editor](#-dicas-para-usar-no-seu-editor)
 - [Todos os comandos](#-todos-os-comandos)
 - [Perguntas frequentes](#-perguntas-frequentes)
 - [Problemas comuns](#-problemas-comuns)
@@ -31,58 +31,67 @@ Enquanto você codifica no seu editor preferido (IntelliJ, VS Code, Cursor, etc.
    ```bash
    python3 --version
    ```
-   Se aparecer algo como `Python 3.10.x` ou superior, está tudo certo. Caso contrário, baixe em [python.org/downloads](https://www.python.org/downloads/).
+   (No Windows, pode ser `python --version` ou `py --version`.) Se aparecer `Python 3.10.x` ou superior, está tudo certo. Caso contrário, baixe em [python.org/downloads](https://www.python.org/downloads/) (no Windows, marque "Add Python to PATH" durante a instalação).
 
-2. **Git** instalado (para baixar o MonitorIA).
-   Confirme com:
-   ```bash
-   git --version
-   ```
+2. **Uma conta no ClassContent.digital** (o mesmo email que você usa para acessar o site).
 
-3. **Uma conta no ClassContent.digital** (o mesmo email que você usa para acessar o site).
+3. **Estar matriculado na turma** em que vai acontecer a aula. Se tiver dúvida, fale com o professor.
 
-4. **Estar matriculado na turma** em que vai acontecer a aula. Se tiver dúvida, fale com o professor.
+4. Um **terminal** onde rodar os comandos. Recomendamos usar o **terminal integrado do seu editor** — assim ele já abre na raiz do projeto:
+   - **IntelliJ / Android Studio / PyCharm**: `Alt + F12` (macOS: `Option + F12`)
+   - **VS Code / Cursor**: `` Ctrl + ` `` (macOS: `` Cmd + ` ``) — também em `View → Terminal`
+   - **Sublime Text**: instale o plugin "Terminus" ou use um terminal externo
 
-5. Um **terminal** onde rodar os comandos. Recomendamos usar o **terminal integrado do IntelliJ** (`Alt + F12`), mas qualquer terminal funciona.
+   Mas qualquer terminal do sistema funciona — Terminal/iTerm2 (macOS), GNOME Terminal/Konsole (Linux), Git Bash/Windows Terminal/PowerShell (Windows).
 
 ---
 
 ## 📥 Instalação (só na primeira vez)
 
-Abra um terminal (pode ser o terminal integrado do IntelliJ, `Alt + F12`) e rode **uma única linha**:
+O MonitorIA está publicado no [PyPI](https://pypi.org/project/monitoria-classcontent/) — então a instalação é **um único comando**, igual qualquer pacote Python.
+
+A forma recomendada é com [`pipx`](https://pipx.pypa.io/), que instala o MonitorIA isolado num ambiente próprio (sem misturar com seus outros projetos). Abra um terminal (qualquer um — do IntelliJ, do VS Code, do Cursor, ou um terminal do sistema) e rode:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/kelsonvictr/monitoria-classcontent-cli/main/install.sh | bash
+# 1. Instala o pipx (só na primeira vez na sua máquina)
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+
+# 2. Feche e reabra o terminal (importante!)
+
+# 3. Instala o MonitorIA
+pipx install monitoria-classcontent
 ```
 
-O instalador faz tudo automaticamente: baixa o MonitorIA, cria um ambiente virtual isolado, instala as dependências e deixa o comando `monitoria` disponível globalmente.
+> 💡 **Windows**: troque `python3` por `py` (ou `python`) nos comandos acima.
 
-Depois de terminar, **feche e reabra o terminal** (pra carregar o PATH atualizado) e rode:
+Confirma que deu certo:
 
 ```bash
 monitoria --help
 ```
 
-Se aparecer a lista de comandos, tá pronto — **você não precisa ativar venv nenhum** nas próximas vezes. O comando `monitoria` funciona direto em qualquer terminal.
+Se aparecer a lista de comandos, **pronto**. Você nunca mais vai precisar ativar venv nenhum — o comando `monitoria` funciona direto em qualquer terminal, em qualquer pasta.
 
-> 💡 **No Windows?** Use o **Git Bash** (vem junto com a instalação do Git). O comando acima funciona igual. PowerShell/CMD não são suportados por enquanto.
+### Alternativa sem pipx
 
-### Instalação manual (caso prefira ver tudo que é feito)
-
-Se preferir passo a passo em vez de rodar o instalador automático:
+Se preferir não usar pipx, dá pra instalar direto com `pip`:
 
 ```bash
-git clone https://github.com/kelsonvictr/monitoria-classcontent-cli.git ~/.monitoria/app
-python3 -m venv ~/.monitoria/app/.venv
-~/.monitoria/app/.venv/bin/pip install -e ~/.monitoria/app
-# Cria um atalho global
-mkdir -p ~/.local/bin
-ln -sf ~/.monitoria/app/.venv/bin/monitoria ~/.local/bin/monitoria
-# Garante que ~/.local/bin está no PATH
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc   # ou ~/.bashrc
+python3 -m pip install --user monitoria-classcontent
 ```
 
-Reabra o terminal e `monitoria --help` deve funcionar.
+Funciona igual, mas o pacote fica junto com outros instalados no seu usuário. Se você só usa Python pra estudar, sem problema.
+
+### Atualizando o MonitorIA
+
+Quando o professor avisar que tem versão nova:
+
+```bash
+pipx upgrade monitoria-classcontent
+# ou, se você instalou com pip:
+python3 -m pip install --user --upgrade monitoria-classcontent
+```
 
 ---
 
@@ -144,11 +153,17 @@ O momento que você realmente vai usar o MonitorIA é **durante a aula**, com se
 
 ### Passo 1 — Abra o projeto no seu editor
 
-Exemplo: abra sua pasta `tarefas/` no IntelliJ.
+Exemplo: abra sua pasta `tarefas/` no editor que você usa (IntelliJ, VS Code, Cursor, PyCharm, etc.).
 
-### Passo 2 — Abra o terminal integrado do IntelliJ
+### Passo 2 — Abra o terminal integrado do editor
 
-Pressione **`Alt + F12`** (macOS: `Option + F12`). O terminal abre já na pasta do seu projeto.
+| Editor | Atalho |
+|--------|--------|
+| IntelliJ / PyCharm / Android Studio | `Alt + F12` (macOS: `Option + F12`) |
+| VS Code / Cursor | `` Ctrl + ` `` (macOS: `` Cmd + ` ``) |
+| Outros | menu **View / Terminal** ou abra um terminal externo na pasta do projeto |
+
+O bom de usar o terminal integrado é que ele abre já na raiz do projeto — sem precisar de `cd`.
 
 ### Passo 3 — Inicie o watch
 
@@ -156,7 +171,7 @@ Pressione **`Alt + F12`** (macOS: `Option + F12`). O terminal abre já na pasta 
 monitoria watch .
 ```
 
-O **ponto final** (`.`) significa "pasta atual" — como o terminal do IntelliJ já abre na raiz do seu projeto, é só rodar assim. Não precisa ativar ambiente virtual nenhum.
+O **ponto final** (`.`) significa "pasta atual" — como o terminal integrado já abre na raiz do projeto, é só rodar assim. Não precisa ativar ambiente virtual nenhum.
 
 A partir desse momento, o painel do MonitorIA aparece no próprio terminal, e cada vez que você salvar um arquivo no editor, ele envia o código atualizado para o ClassContent e mostra o feedback na tela.
 
@@ -214,12 +229,25 @@ O painel **se atualiza sozinho** a cada salvamento. Você não precisa apertar n
 
 ---
 
-## 💡 Dicas para usar no IntelliJ
+## 💡 Dicas para usar no seu editor
+
+### IntelliJ / PyCharm / Android Studio
 
 - **Atalho do terminal integrado**: `Alt + F12` (Windows/Linux) ou `Option + F12` (macOS).
 - **Divida a tela**: clique com o botão direito na aba do terminal → "Split Right" — assim você mantém o painel do MonitorIA visível ao lado do código.
-- **Auto-save do IntelliJ**: já basta. O IntelliJ salva sozinho quando você perde o foco (troca de aba, clica em outro lugar). Não precisa ficar apertando `Ctrl + S`.
-- **Vários terminais**: você pode ter um terminal rodando o MonitorIA e outro rodando `mvn spring-boot:run` (ou o comando do seu projeto) em paralelo — basta clicar no `+` na aba do terminal.
+- **Auto-save**: já basta. O IntelliJ salva sozinho quando você perde o foco (troca de aba, clica em outro lugar). Não precisa ficar apertando `Ctrl + S`.
+- **Vários terminais**: clique no `+` na aba do terminal pra abrir mais um (ex: um rodando o MonitorIA e outro rodando `mvn spring-boot:run` em paralelo).
+
+### VS Code / Cursor
+
+- **Atalho do terminal integrado**: `` Ctrl + ` `` (Windows/Linux) ou `` Cmd + ` `` (macOS) — também em `View → Terminal`.
+- **Divida a tela**: no painel do terminal, clique no ícone "Split Terminal" (ou `Ctrl + Shift + 5`) pra ter terminais lado a lado.
+- **Auto-save**: ative em `File → Auto Save` (ou `"files.autoSave": "onFocusChange"` em settings.json) — assim seus arquivos vão pro MonitorIA sem precisar `Ctrl + S`.
+- **Vários terminais**: clique no `+` no canto do terminal, ou use o dropdown pra alternar entre eles.
+
+### Outros editores (Sublime, Vim/Neovim, Emacs, ...)
+
+Sem terminal integrado nativo? Sem problema — abra qualquer terminal externo, navegue até a raiz do projeto e rode `monitoria watch .`. Funciona igual.
 
 ---
 
@@ -320,34 +348,35 @@ A aula acabou (ou foi pausada). Aperte `Ctrl + C` para encerrar o `watch`. Da pr
 
 No Windows, tente `python` em vez de `python3`. Se nenhum funcionar, instale do site oficial: [python.org/downloads](https://www.python.org/downloads/).
 
-### `monitoria: command not found` depois de rodar o instalador
+### `monitoria: command not found` depois de instalar
 
-Feche e reabra o terminal — o instalador atualiza o PATH mas o terminal atual não enxerga a mudança. Se persistir, rode na hora:
-
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-E confira que o atalho existe:
+Feche e reabra o terminal — o `pipx` ajusta o PATH mas o terminal atual não enxerga a mudança. Se persistir, rode:
 
 ```bash
-ls -l ~/.local/bin/monitoria
+python3 -m pipx ensurepath
 ```
 
-Se o arquivo não existir, rode o instalador de novo:
+Feche e abra de novo. Confirme que o pacote está instalado:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/kelsonvictr/monitoria-classcontent-cli/main/install.sh | bash
+pipx list
 ```
 
-### O instalador deu erro de permissão (`Permission denied`)
+Se `monitoria-classcontent` não aparecer, reinstale:
 
-Não rode com `sudo`. O instalador coloca tudo na sua pasta pessoal (`~/.monitoria` e `~/.local/bin`), não precisa de admin.
+```bash
+pipx install monitoria-classcontent
+```
+
+### `error: externally-managed-environment` (em distros Linux modernas)
+
+Algumas versões novas do Linux/macOS não deixam usar `pip install` direto. Use o `pipx` (recomendado neste README) — ele resolve isso automaticamente.
 
 ### O painel está todo bagunçado / aparecendo caracteres estranhos
 
 Seu terminal pode não estar renderizando bem. Teste:
-- **No IntelliJ**: `Settings → Tools → Terminal` → escolha "Shell path" como `bash` ou `zsh` (macOS/Linux) / `cmd.exe` (Windows).
+- **No IntelliJ / PyCharm**: `Settings → Tools → Terminal` → "Shell path" = `bash` ou `zsh` (macOS/Linux) / `cmd.exe` ou Git Bash (Windows).
+- **No VS Code / Cursor**: `Settings → Terminal › Integrated › Default Profile` — escolha `bash`, `zsh` ou Git Bash conforme seu sistema.
 - Aumente a largura da janela do terminal (mínimo ~100 colunas).
 - Em último caso, feche e reabra o terminal.
 
@@ -379,12 +408,16 @@ Se quiser remover o MonitorIA:
 # 2. Remova seu login local
 monitoria logout
 
-# 3. Remove o atalho global e o diretório de instalação
-rm -f ~/.local/bin/monitoria
+# 3. Desinstala o pacote
+pipx uninstall monitoria-classcontent
+# ou, se você instalou com pip:
+python3 -m pip uninstall monitoria-classcontent
+
+# 4. (Opcional) remove a configuração local
 rm -rf ~/.monitoria
 ```
 
-Se quiser, remova também a linha `export PATH="$HOME/.local/bin:$PATH"` que o instalador adicionou em `~/.zshrc` ou `~/.bashrc`. Pronto — nada mais do MonitorIA ficará no seu computador.
+Pronto — nada mais do MonitorIA fica no seu computador.
 
 ---
 
